@@ -2,15 +2,12 @@ import re
 import unicodedata
 import logging
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 
 
-def replace_if_error(error, default=None, todo=logging.error):
+def replace_if_error(error, default=None, todo=logging.warning):
     def deco(func):
         def wrapper(*args, **kwargs):
             try:
@@ -49,18 +46,6 @@ def normalize_price(price):
     except Exception as e:
         print(e)
         return price
-
-
-def get_driver(headless=True):
-    webdriver_service = Service(ChromeDriverManager().install())
-    chrome_options = webdriver.ChromeOptions()
-    if headless:
-        chrome_options.add_argument('--headless=new')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(
-        service=webdriver_service, options=chrome_options)
-    return driver
 
 
 def wait_for_element(driver, css_selector, timeout=10):

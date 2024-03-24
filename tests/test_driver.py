@@ -4,7 +4,7 @@ from monpetitsalon.driver import get_driver
 
 
 def test_driver() -> None:
-    driver = next(get_driver())
+    driver = next(get_driver(browser='chrome'))
     URL = 'https://httpbin.org/anything/test_driver'
     driver.get(URL)
     json_txt = driver.find_element(By.CSS_SELECTOR, 'pre').text
