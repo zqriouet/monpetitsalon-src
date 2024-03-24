@@ -22,9 +22,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+          export PYTHONPATH=$PWD/src:$PYTHONPATH
       - name: Run tests
         run: pytest
-        # - name: Install dependencies
+      # - name: Install dependencies
       #   run: |
       #     python -m pip install --upgrade pip
       #     pip install poetry pytest
