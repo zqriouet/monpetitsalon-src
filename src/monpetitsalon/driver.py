@@ -14,7 +14,7 @@ def get_driver(headless=True, browser='chrome'):
         if headless:
             options.add_argument('--headless=new')
         options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
+        # options.add_argument('--disable-dev-shm-usage')
         driver = webdriver.Chrome(service=webdriver_service, options=options)
     elif browser == 'firefox':
         webdriver_service = FirefoxService(GeckoDriverManager().install())
@@ -27,7 +27,7 @@ def get_driver(headless=True, browser='chrome'):
             GeckoDriverManager().install()), options=options)
         driver = webdriver.Firefox(service=webdriver_service, options=options)
     else:
-        raise ValueError('Valid browser are chrome and firefox')
+        raise ValueError('Valid browsers are chrome and firefox')
     driver.implicitly_wait(10)
     yield driver
     driver.quit()
