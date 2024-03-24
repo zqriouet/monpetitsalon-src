@@ -15,17 +15,11 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.11"
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install -r requirements.txt
-      #     pip install pytest
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install poetry pytest
           poetry install
-          poetry add selenium-wire
       - name: Run tests
         run: poetry run pytest
       # - name: Build and publish package
