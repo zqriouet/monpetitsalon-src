@@ -25,6 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry pytest
           poetry install
+          poetry add selenium-wire
       - name: Run tests
         run: poetry run pytest
       # - name: Build and publish package
