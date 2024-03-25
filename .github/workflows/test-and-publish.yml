@@ -22,8 +22,8 @@ jobs:
           poetry install
       - name: Run tests
         run: poetry run pytest
-      # - name: Build and publish package
-      #   run: |
-      #     poetry config repositories.test-pypi https://test.pypi.org/legacy/
-      #     poetry config pypi-token.test-pypi ${{ secrets.MONPETITSALON_SRC_TOKEN }}
-      #     poetry publish --build -r test-pypi
+      - name: Build and publish package
+        run: |
+          poetry config repositories.test-pypi https://test.pypi.org/legacy/
+          poetry config pypi-token.test-pypi ${{ secrets.MONPETITSALON_SRC_TOKEN }}
+          poetry publish --build -r test-pypi
