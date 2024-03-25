@@ -33,9 +33,9 @@ def extract_data(agent, driver, items=[], sleep=1):
     return items
 
 
-def extract_cards(cards_agent, cards=[], sleep=1, headless=False):
+def extract_cards(cards_agent, cards=[], sleep=1, headless=False, remote_host=None):
     try:
-        driver = next(get_driver(headless))
+        driver = next(get_driver(headless, remote_host))
         driver.get(f'{cards_agent.query.url}&page={cards_agent.page_ct + 1}')
         cards_agent.reject_cookies(driver)
         cards = extract_data(cards_agent, driver, cards, sleep)
@@ -45,11 +45,11 @@ def extract_cards(cards_agent, cards=[], sleep=1, headless=False):
         return extract_cards(cards_agent, cards, sleep, headless)
 
 
-def extract_details(details_agent, details=[], sleep=1, headless=False):
+def extract_details(details_agent, details=[], sleep=1, headless=False, remote_host=None):
     try:
         page_i = (details_agent.page_ct - 2) // 24 + 1
         item_i = (details_agent.page_ct - 2) % 24
-        driver = next(get_driver(headless))
+        driver = next(get_driver(headless, remote_host))
         driver.get(f'{details_agent.query.url}&page={page_i}')
         details_agent.reject_cookies(driver)
         wait_for_element(driver, CardsPageScraper.css_selector, 10)
