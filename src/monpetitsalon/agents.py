@@ -162,7 +162,7 @@ class DetailsNavigationAgent(BaseNavigationAgent):
             return page_id
         except (ElementClickInterceptedException, StaleElementReferenceException):
             self.escape_popup_error(driver)
-            self.get_page_id(driver)
+            return self.get_page_id(driver)
 
     def get_page_ct(self, driver):
         try:
@@ -171,4 +171,4 @@ class DetailsNavigationAgent(BaseNavigationAgent):
             self.set_page_ct(int(page_ct))
             return self.page_ct
         except Exception as e:
-            print(e)
+            print(f'problem with page_ct : {e}')

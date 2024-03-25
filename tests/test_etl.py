@@ -6,7 +6,7 @@ from monpetitsalon.query import Query
 from monpetitsalon.driver import get_driver
 from monpetitsalon.scrapers import CardsPageScraper
 from monpetitsalon.agents import CardsNavigationAgent, DetailsNavigationAgent
-from monpetitsalon.etl import extract_data
+from monpetitsalon.etl import extract_cards, extract_details
 
 headless = True
 
@@ -21,22 +21,16 @@ def query():
 def test_extract_cards(query):
     max_pages = 2
     cards_agent = CardsNavigationAgent(query, None, max_it=max_pages)
-    driver = next(get_driver(headless))
-    driver.get(query.url)
-    cards_agent.reject_cookies(driver)
-    cards = extract_data(cards_agent, driver, query, items=[])
+    cards, driver = extract_cards(cards_agent, headless=headless)
+    driver.quit()
     assert len(cards) == max_pages * 24
 
 
 # @pytest.mark.flaky(reruns=3, reruns_delay=5)
 def test_extract_details(query):
     max_it = 5
-    details_agent = DetailsNavigationAgent(query, None, max_it=max_it)
-    driver = next(get_driver(headless))
-    driver.get(query.url)
-    details_agent.reject_cookies(driver)
-    wait_for_element(driver, CardsPageScraper.css_selector, 10)
-    driver.find_elements(by=By.CSS_SELECTOR,
-                         value=CardsPageScraper.css_selector)[-1].click()
-    details = extract_data(details_agent, driver, query, items=[])
+    details_agent = DetailsNavigationAgent(query, None, max_it=max_it*2)
+    details_agent.set_page_ct(max_it + 1)
+    details, driver = extract_details(details_agent, headless=headless)
+    driver.quit()
     assert len(details) == max_it

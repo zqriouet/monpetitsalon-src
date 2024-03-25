@@ -1,11 +1,10 @@
-import math
-import time
 import pendulum
+import time
 from selenium.common.exceptions import NoSuchWindowException, ElementClickInterceptedException, WebDriverException
 from selenium.webdriver.common.by import By
 from monpetitsalon.utils import wait_for_element
-from monpetitsalon.query import Query
 from monpetitsalon.driver import get_driver
+from monpetitsalon.query import Query
 from monpetitsalon.parsers import CardItemParser, DetailItemParser
 from monpetitsalon.scrapers import CardsPageScraper, DetailsPageScraper
 from monpetitsalon.agents import CardsNavigationAgent, DetailsNavigationAgent
@@ -20,12 +19,65 @@ def extract_single_page_data(agent, driver):
     return new_items
 
 
-def extract_data(agent, driver, query, items=[]):
+def extract_data(agent, driver, items=[], sleep=1):
     terminated = False
     while not terminated:
+        time.sleep(sleep)
         new_items = extract_single_page_data(agent, driver)
         items.extend(new_items)
-        terminated = agent.terminated(driver, query.from_date)
+        page_ct = agent.get_page_ct(driver)
+        agent.set_page_ct(page_ct)
+        terminated = agent.terminated(driver, agent.query.from_date)
         if not terminated:
             agent.go_to_next_page(driver)
     return items
+
+
+def extract_cards(cards_agent, cards=[], sleep=1, headless=False):
+    try:
+        driver = next(get_driver(headless))
+        driver.get(f'{cards_agent.query.url}&page={cards_agent.page_ct + 1}')
+        cards_agent.reject_cookies(driver)
+        cards = extract_data(cards_agent, driver, cards, sleep)
+        return (cards, driver)
+    except (NoSuchWindowException, ElementClickInterceptedException, WebDriverException) as e:
+        print(f'{e}\ndriver reloaded')
+        return extract_cards(cards_agent, cards, sleep, headless)
+
+
+def extract_details(details_agent, details=[], sleep=1, headless=False):
+    try:
+        page_i = (details_agent.page_ct - 2) // 24 + 1
+        item_i = (details_agent.page_ct - 2) % 24
+        driver = next(get_driver(headless))
+        driver.get(f'{details_agent.query.url}&page={page_i}')
+        details_agent.reject_cookies(driver)
+        wait_for_element(driver, CardsPageScraper.css_selector, 10)
+        driver.find_elements(by=By.CSS_SELECTOR, value=CardsPageScraper.css_selector)[
+            item_i].click()
+        details = extract_data(details_agent, driver, details, sleep)
+        return (details, driver)
+    except (NoSuchWindowException, ElementClickInterceptedException, WebDriverException) as e:
+        print(f'{e}\ndriver reloaded')
+        return extract_details(details_agent, details, sleep, headless)
+
+
+if __name__ == '__main__':
+    headless = False
+    rent_sale, zipcodes, from_date = 'location', [
+        75, 92, 93, 94], pendulum.now("Europe/Paris").add(hours=-6)
+    query = Query(rent_sale, zipcodes, from_date)
+
+    max_pages = 5
+    cards_agent = CardsNavigationAgent(query, None, max_it=max_pages)
+    cards, driver = extract_cards(cards_agent)
+
+    n_cards = len(cards)
+    details_agent = DetailsNavigationAgent(query, None, max_it=n_cards*2)
+    details_agent.set_page_ct(n_cards + 1)
+    details, driver = extract_details(details_agent)
+
+    print(len(cards))
+    print(len(set([c.get('listing_id') for c in cards])))
+    print(len(details))
+    print(len(set([d.get('listing_id') for d in details])))
