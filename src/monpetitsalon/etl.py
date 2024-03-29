@@ -9,6 +9,8 @@ from monpetitsalon.parsers import CardItemParser, DetailItemParser
 from monpetitsalon.scrapers import CardsPageScraper, DetailsPageScraper
 from monpetitsalon.agents import CardsNavigationAgent, DetailsNavigationAgent
 
+def indices(ct):
+    return (ct - 1) // 24 + 1, (ct - 1) % 24
 
 def extract_single_page_data(agent, driver):
     agent.wait_loading(driver)
@@ -47,8 +49,7 @@ def extract_cards(cards_agent, cards=[], sleep=1, headless=False, remote_host=No
 
 def extract_details(details_agent, details=[], sleep=1, headless=False, remote_host=None):
     try:
-        page_i = (details_agent.page_ct - 2) // 24 + 1
-        item_i = (details_agent.page_ct - 2) % 24
+        page_i, item_i = indices(details_agent.page_ct)
         driver = next(get_driver(headless, remote_host))
         driver.get(f'{details_agent.query.url}&page={page_i}')
         details_agent.reject_cookies(driver)
@@ -59,7 +60,7 @@ def extract_details(details_agent, details=[], sleep=1, headless=False, remote_h
         return (details, driver)
     except (NoSuchWindowException, ElementClickInterceptedException, WebDriverException) as e:
         print(f'{e}\ndriver reloaded')
-        return extract_details(details_agent, details, sleep, headless)
+        return extract_details(details_agent, cards, details, sleep, headless)
 
 
 if __name__ == '__main__':
