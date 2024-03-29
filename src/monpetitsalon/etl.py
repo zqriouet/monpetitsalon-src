@@ -1,16 +1,24 @@
-import pendulum
 import time
-from selenium.common.exceptions import NoSuchWindowException, ElementClickInterceptedException, WebDriverException
+
+import pendulum
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    NoSuchWindowException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
-from monpetitsalon.utils import wait_for_element
-from monpetitsalon.driver import get_driver
-from monpetitsalon.query import Query
-from monpetitsalon.parsers import CardItemParser, DetailItemParser
-from monpetitsalon.scrapers import CardsPageScraper, DetailsPageScraper
+
 from monpetitsalon.agents import CardsNavigationAgent, DetailsNavigationAgent
+from monpetitsalon.driver import get_driver
+from monpetitsalon.parsers import CardItemParser, DetailItemParser
+from monpetitsalon.query import Query
+from monpetitsalon.scrapers import CardsPageScraper, DetailsPageScraper
+from monpetitsalon.utils import wait_for_element
+
 
 def indices(ct):
     return (ct - 1) // 24 + 1, (ct - 1) % 24
+
 
 def extract_single_page_data(agent, driver):
     agent.wait_loading(driver)
@@ -38,35 +46,49 @@ def extract_data(agent, driver, items=[], sleep=1):
 def extract_cards(cards_agent, cards=[], sleep=1, headless=False, remote_host=None):
     try:
         driver = next(get_driver(headless, remote_host))
-        driver.get(f'{cards_agent.query.url}&page={cards_agent.page_ct + 1}')
+        driver.get(f"{cards_agent.query.url}&page={cards_agent.page_ct + 1}")
         cards_agent.reject_cookies(driver)
         cards = extract_data(cards_agent, driver, cards, sleep)
         return (cards, driver)
-    except (NoSuchWindowException, ElementClickInterceptedException, WebDriverException) as e:
-        print(f'{e}\ndriver reloaded')
+    except (
+        NoSuchWindowException,
+        ElementClickInterceptedException,
+        WebDriverException,
+    ) as e:
+        print(f"{e}\ndriver reloaded")
         return extract_cards(cards_agent, cards, sleep, headless)
 
 
-def extract_details(details_agent, details=[], sleep=1, headless=False, remote_host=None):
+def extract_details(
+    details_agent, details=[], sleep=1, headless=False, remote_host=None
+):
     try:
-        page_i, item_i = indices(details_agent.page_ct)
+        page_i, item_i = indices(details_agent.page_ct - 1)
         driver = next(get_driver(headless, remote_host))
-        driver.get(f'{details_agent.query.url}&page={page_i}')
+        driver.get(f"{details_agent.query.url}&page={page_i}")
         details_agent.reject_cookies(driver)
         wait_for_element(driver, CardsPageScraper.css_selector, 10)
         driver.find_elements(by=By.CSS_SELECTOR, value=CardsPageScraper.css_selector)[
-            item_i].click()
+            item_i
+        ].click()
         details = extract_data(details_agent, driver, details, sleep)
         return (details, driver)
-    except (NoSuchWindowException, ElementClickInterceptedException, WebDriverException) as e:
-        print(f'{e}\ndriver reloaded')
+    except (
+        NoSuchWindowException,
+        ElementClickInterceptedException,
+        WebDriverException,
+    ) as e:
+        print(f"{e}\ndriver reloaded")
         return extract_details(details_agent, cards, details, sleep, headless)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     headless = False
-    rent_sale, zipcodes, from_date = 'location', [
-        75, 92, 93, 94], pendulum.now("Europe/Paris").add(hours=-6)
+    rent_sale, zipcodes, from_date = (
+        "location",
+        [75, 92, 93, 94],
+        pendulum.now("Europe/Paris").add(hours=-6),
+    )
     query = Query(rent_sale, zipcodes, from_date)
 
     max_pages = 5
@@ -74,11 +96,11 @@ if __name__ == '__main__':
     cards, driver = extract_cards(cards_agent)
 
     n_cards = len(cards)
-    details_agent = DetailsNavigationAgent(query, None, max_it=n_cards*2)
+    details_agent = DetailsNavigationAgent(query, None, max_it=n_cards * 2)
     details_agent.set_page_ct(n_cards + 1)
     details, driver = extract_details(details_agent)
 
     print(len(cards))
-    print(len(set([c.get('listing_id') for c in cards])))
+    print(len(set([c.get("listing_id") for c in cards])))
     print(len(details))
-    print(len(set([d.get('listing_id') for d in details])))
+    print(len(set([d.get("listing_id") for d in details])))
