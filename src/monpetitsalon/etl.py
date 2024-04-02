@@ -56,7 +56,7 @@ def extract_cards(cards_agent, cards=[], sleep=1, headless=False, remote_host=No
         WebDriverException,
     ) as e:
         print(f"{e}\ndriver reloaded")
-        return extract_cards(cards_agent, cards, sleep, headless)
+        return extract_cards(cards_agent, cards, sleep, headless, remote_host)
 
 
 def extract_details(
@@ -79,7 +79,7 @@ def extract_details(
         WebDriverException,
     ) as e:
         print(f"{e}\ndriver reloaded")
-        return extract_details(details_agent, cards, details, sleep, headless)
+        return extract_details(details_agent, details, sleep, headless, remote_host)
 
 
 if __name__ == "__main__":
