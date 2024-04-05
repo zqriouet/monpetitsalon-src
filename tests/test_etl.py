@@ -9,7 +9,7 @@ from monpetitsalon.query import Query
 from monpetitsalon.scrapers import CardsPageScraper
 from monpetitsalon.utils import wait_for_element
 
-headless = False
+headless = True
 
 
 @pytest.fixture
