@@ -4,6 +4,7 @@ import pendulum
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
     NoSuchWindowException,
+    TimeoutException,
     WebDriverException,
 )
 from selenium.webdriver.common.by import By
@@ -16,7 +17,7 @@ from monpetitsalon.scrapers import CardsPageScraper, DetailsPageScraper
 from monpetitsalon.utils import wait_for_element
 
 
-def indices(ct):
+def indices(ct: int):
     return (ct - 1) // 24 + 1, (ct - 1) % 24
 
 
@@ -45,8 +46,16 @@ def extract_data(agent, driver, items=[], sleep=1):
 
 def extract_cards(cards_agent, cards=[], sleep=1, headless=False, remote_host=None):
     try:
-        driver = next(get_driver(headless, remote_host))
-        driver.get(f"{cards_agent.query.url}&page={cards_agent.page_ct + 1}")
+        retries = 1
+        while retries <= 5:
+            try:
+                # driver = next(get_driver(headless, remote_host))
+                driver = get_driver(headless, remote_host)
+                driver.get(f"{cards_agent.query.url}&page={cards_agent.page_ct + 1}")
+                break
+            except TimeoutException:
+                print("timeout exception")
+                retries += 1
         cards_agent.reject_cookies(driver)
         cards = extract_data(cards_agent, driver, cards, sleep)
         return (cards, driver)
@@ -63,9 +72,17 @@ def extract_details(
     details_agent, details=[], sleep=1, headless=False, remote_host=None
 ):
     try:
-        page_i, item_i = indices(details_agent.page_ct - 1)
-        driver = next(get_driver(headless, remote_host))
-        driver.get(f"{details_agent.query.url}&page={page_i}")
+        page_i, item_i = indices(max(1, details_agent.page_ct - 1))
+        retries = 1
+        while retries <= 5:
+            try:
+                # driver = next(get_driver(headless, remote_host))
+                driver = get_driver(headless, remote_host)
+                driver.get(f"{details_agent.query.url}&page={page_i}")
+                break
+            except TimeoutException:
+                print("timeout exception")
+                retries += 1
         details_agent.reject_cookies(driver)
         wait_for_element(driver, CardsPageScraper.css_selector, 10)
         driver.find_elements(by=By.CSS_SELECTOR, value=CardsPageScraper.css_selector)[
