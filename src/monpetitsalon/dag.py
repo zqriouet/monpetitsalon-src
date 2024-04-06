@@ -8,6 +8,7 @@ from monpetitsalon.agents import CardsNavigationAgent, DetailsNavigationAgent
 from monpetitsalon.etl import extract_cards, extract_details
 from monpetitsalon.query import Query
 
+DATA_PATH = os.getenv('DATA_PATH', '')
 
 def task_scrape_cards(
     rent_sale: str,
@@ -15,6 +16,7 @@ def task_scrape_cards(
     dates: dict,
     headless: bool = True,
     remote_host: str | None = None,
+    max_it: int = 2400
 ):
     query = Query(rent_sale, zipcodes, dates.get("FROM_DATE"))
     cards_agent = CardsNavigationAgent(query, None)
@@ -38,7 +40,6 @@ def task_scrape_details(input: dict):
     details_agent = DetailsNavigationAgent(
         query, None, max_it=2 * len(input.get("cards"))
     )
-    # details_agent = DetailsNavigationAgent(query, None, max_it=5)
     details_agent.set_page_ct(len(input.get("cards")) + 1)
     details, _ = extract_details(
         details_agent, [], 1, input.get("headless"), input.get("remote_host")
@@ -53,7 +54,7 @@ def task_store_data(input: dict):
     rent_sale = input.get("rent_sale")
     dates = input.get("dates")
     path = os.path.join(
-        "./data",
+        DATA_PATH,
         dates.get("TO_DATE").format("YYYY-MM-DDTHH:mm:ss"),
         rent_sale,
     )
