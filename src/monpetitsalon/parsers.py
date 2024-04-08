@@ -101,7 +101,7 @@ class BaseItemParser:
             pendulum.from_format(
                 e["title"].replace("1er", "1"),
                 "D MMMM YYYY HH:mm:ss",
-                tz="Europe/Paris",
+                locale="fr",
             )
             for e in soup.select(self.data_paths.get("modification_date"))
         ]
