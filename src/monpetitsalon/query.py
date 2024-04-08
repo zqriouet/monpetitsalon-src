@@ -17,11 +17,11 @@ class Query:
         if rent_sale.lower() in ['sale', 'achat']:
             self.rent_sale = 'achat'
         self.zipcodes = [str(zipcode) for zipcode in zipcodes]
-        self.date = pendulum.now("Europe/Paris")
-        self.date_str = self.date.format("YYYY-MM-DDTHH:mm:ss")
+        self.date = pendulum.now(tz="Europe/Paris")
+        self.date_str = self.date.format("YYYY-MM-DDTHH:mm:ss", tz='Europe/Paris')
         self.from_date = from_date
-        self.from_date_str = self.from_date.format("YYYY-MM-DDTHH:mm:ss")
-        self.from_date_str = self.from_date.format("YYYY-MM-DDTHH:mm:ss")
+        self.from_date_str = self.from_date.format("YYYY-MM-DDTHH:mm:ss", tz='Europe/Paris')
+        self.from_date_str = self.from_date.format("YYYY-MM-DDTHH:mm:ss", tz='Europe/Paris')
         self.sort = sort
         self.url = f'https://www.bienici.com/recherche/{self.rent_sale}/{",".join(self.zipcodes)}?mode=liste&tri={self.sort}'
         self.base_file_name = (
