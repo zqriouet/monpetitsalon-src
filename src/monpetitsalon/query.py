@@ -12,7 +12,10 @@ class Query:
         from_date: pendulum.datetime,
         sort: str = "modification-desc",
     ):
-        self.rent_sale = rent_sale
+        if rent_sale.lower() in ['rent', 'location']:
+            self.rent_sale = 'location'
+        if rent_sale.lower() in ['sale', 'achat']:
+            self.rent_sale = 'achat'
         self.zipcodes = [str(zipcode) for zipcode in zipcodes]
         self.date = pendulum.now("Europe/Paris")
         self.date_str = self.date.format("YYYY-MM-DDTHH:mm:ss")
