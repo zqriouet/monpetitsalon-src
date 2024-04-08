@@ -99,7 +99,9 @@ class BaseItemParser:
     def parse_modification_date(self, soup):
         modification_dates = [
             pendulum.from_format(
-                e["title"].replace("1er", "1"), "D MMMM YYYY HH:mm:ss", tz='Europe/Paris'
+                e["title"].replace("1er", "1"),
+                "D MMMM YYYY HH:mm:ss",
+                tz="Europe/Paris",
             )
             for e in soup.select(self.data_paths.get("modification_date"))
         ]
