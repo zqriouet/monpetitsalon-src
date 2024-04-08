@@ -102,6 +102,7 @@ class BaseItemParser:
                 e["title"].replace("1er", "1"),
                 "D MMMM YYYY HH:mm:ss",
                 locale="fr",
+                tz="Europe/Paris"
             )
             for e in soup.select(self.data_paths.get("modification_date"))
         ]
